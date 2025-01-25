@@ -1,0 +1,23 @@
+# Ignore node_modules in all workspace packages
+**/node_modules
+**/tsconfig.tsbuildinfo
+# Ignore Yarn specific files
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Ignore Yarn cache
+.yarn/cache
+
+# Ignore build output
+dist/
+build/
+
+# Ignore environment variables file
+.env
+
+
+.vscode

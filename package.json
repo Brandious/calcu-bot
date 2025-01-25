@@ -1,0 +1,19 @@
+{
+  "name": "calcu-bot",
+  "packageManager": "yarn@4.3.1",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "server": "yarn workspace backend dev",
+    "client": "yarn workspace frontend dev"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.10",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
