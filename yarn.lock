@@ -1275,6 +1275,8 @@ __metadata:
   dependencies:
     "@types/express": "npm:^4"
     express: "npm:^4.21.2"
+    math-lib: "workspace:*"
+    shared: "workspace:*"
     socket.io: "npm:^4.8.1"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.7.3"
@@ -2692,6 +2694,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"math-lib@workspace:*, math-lib@workspace:apps/math-lib":
+  version: 0.0.0-use.local
+  resolution: "math-lib@workspace:apps/math-lib"
+  dependencies:
+    typescript: "npm:^5.7.3"
+  languageName: unknown
+  linkType: soft
+
 "media-typer@npm:0.3.0":
   version: 0.3.0
   resolution: "media-typer@npm:0.3.0"
@@ -3461,6 +3471,12 @@ __metadata:
   checksum: 10c0/68733173026766fa0d9ecaeb07f0483f4c2dc70ca376b3b7c40b7cda909f94b0918f6c5ad5ce27a9160bdfb475efaa9d5e705a11d8eaae18f9835d20976028bc
   languageName: node
   linkType: hard
+
+"shared@workspace:*, shared@workspace:apps/shared":
+  version: 0.0.0-use.local
+  resolution: "shared@workspace:apps/shared"
+  languageName: unknown
+  linkType: soft
 
 "shebang-command@npm:^2.0.0":
   version: 2.0.0

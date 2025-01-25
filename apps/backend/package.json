@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "express": "^4.21.2",
+    "math-lib": "workspace:*",
+    "shared": "workspace:*",
     "socket.io": "^4.8.1"
   }
 }
