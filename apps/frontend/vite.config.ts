@@ -6,5 +6,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     preserveSymlinks: true // this is the fix!
-  }
+  },
+  server: {
+    proxy: {
+    '/socket.io': {
+      target: "http://localhost:8000",
+      changeOrigin: true,
+      ws: true
+    }}}
 })

@@ -4,3 +4,88 @@
   padding: 2rem;
   text-align: center;
 }
+
+.calculator-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  transition: all 0.3s ease-in-out;
+}
+
+
+@media screen and (max-width: 576px) {
+  .calculator-container {
+      padding: 0 12px;
+      transform-origin: center;
+      width: 200px;
+      animation: mobile-resize 0.3s ease-in-out;
+  }
+}
+
+@media screen and (min-width: 577px) and (max-width: 820px) {
+  .calculator-container {
+      padding: 0 16px;
+      transform-origin: center;
+      width: 400px;
+      animation: tablet-resize 0.3s ease-in-out;
+  }
+}
+
+@media screen and (min-width: 820px) {
+  .calculator-container {
+      width: 800px;
+      padding: 0 24px;
+      transform-origin: center;
+      animation: desktop-resize 0.3s ease-in-out;
+  }
+}
+
+/* Animation keyframes */
+@keyframes mobile-resize {
+  from {
+      opacity: 0.8;
+      transform: scale(0.98);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+@keyframes tablet-resize {
+  from {
+      opacity: 0.9;
+      transform: scale(0.99);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+@keyframes desktop-resize {
+  from {
+      opacity: 0.95;
+      transform: scale(0.99);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+/* Optional: Add smooth transitions for all properties */
+.calculator-container * {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Optional: Add a subtle shadow animation */
+.calculator-container {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.calculator-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

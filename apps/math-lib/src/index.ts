@@ -7,19 +7,69 @@
 export const evaluateExpression = (expression: string): number => {
     // Function to validate the expression
     const isValidExpression = (expr: string): boolean => {
-        // Regular expression to validate the expression
-        const regex = /^[0-9+\-*/().\s]+$/;
+        // Updated regex to allow leading +/- and multiple operators
+        const regex = /^[-+]?[0-9+\-*/().\s]+$/;
         return regex.test(expr);
     };
+
+     // Function to tokenize the expression handling negative numbers
+     const tokenize = (expr: string): string[] => {
+        const tokens: string[] = [];
+        const chars = expr.replace(/\s+/g, '').split('');
+        let currentNumber = '';
+        let isNegative = false;
+
+        for (let i = 0; i < chars.length; i++) {
+            const char = chars[i];
+            const prevChar = i > 0 ? chars[i - 1] : null;
+
+            // Handle numbers (including decimals)
+            if (!isNaN(Number(char)) || char === '.') {
+                currentNumber += char;
+                continue;
+            }
+
+            // Push accumulated number if exists
+            if (currentNumber) {
+                tokens.push(isNegative ? `-${currentNumber}` : currentNumber);
+                currentNumber = '';
+                isNegative = false;
+            }
+
+            // Handle operators
+            if (['+', '-', '*', '/', '(', ')'].includes(char)) {
+                // Check for negative numbers
+                if (char === '-' && (
+                    i === 0 || // Start of expression
+                    prevChar === '(' || // After opening parenthesis
+                    prevChar && ['+', '-', '*', '/'].includes(prevChar) // After operator
+                )) {
+                    isNegative = true;
+                    continue;
+                }
+                tokens.push(char);
+            }
+        }
+
+        // Push final number if exists
+        if (currentNumber) {
+            tokens.push(isNegative ? `-${currentNumber}` : currentNumber);
+        }
+
+        return tokens;
+    };
+
 
     // Function to perform the calculation
     const calculate = (tokens: string[]): number => {
         let numStack: number[] = [];
         let opStack: string[] = [];
 
-        const applyOperation = (operator: string) => {
+        const applyOperation = () => {
+            const operator = opStack.pop()!;
             const b = numStack.pop()!;
             const a = numStack.pop()!;
+            
             switch (operator) {
                 case '+':
                     numStack.push(a + b);
@@ -44,24 +94,24 @@ export const evaluateExpression = (expression: string): number => {
                 opStack.push(token);
             } else if (token === ')') {
                 while (opStack.length && opStack[opStack.length - 1] !== '(') {
-                    applyOperation(opStack.pop()!);
+                    applyOperation();
                 }
                 opStack.pop(); // Remove '('
             } else {
-                while (opStack.length && precedence(opStack[opStack.length - 1]) >= precedence(token)) {
-                    applyOperation(opStack.pop()!);
+                while (opStack.length && 
+                       precedence(opStack[opStack.length - 1]) >= precedence(token)) {
+                    applyOperation();
                 }
                 opStack.push(token);
             }
         }
 
         while (opStack.length) {
-            applyOperation(opStack.pop()!);
+            applyOperation();
         }
 
         return numStack[0];
     };
-
     // Function to determine operator precedence
     const precedence = (operator: string): number => {
         if (operator === '+' || operator === '-') return 1;
@@ -74,12 +124,12 @@ export const evaluateExpression = (expression: string): number => {
         throw new Error("Invalid expression");
     }
 
-    // Tokenize the expression
-    const tokens = expression
-        .replace(/\s+/g, '') // Remove whitespace
-        .split(/([\+\-\*\/\(\)])/)
-        .filter(token => token.length > 0); // Filter out empty tokens
-
-    // Evaluate the expression
-    return calculate(tokens);
+   
+       // Evaluate the expression
+    try {
+        const tokens = tokenize(expression);
+        return calculate(tokens);
+    } catch (error) {
+        throw new Error(`Error evaluating expression: ${error.message}`);
+    }
 };
