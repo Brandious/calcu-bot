@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
 import { evaluateExpression } from "@calcu-bot/math-lib";
 import { Server } from "socket.io";
-import { ActionType } from '@calcu-bot/shared';
+import { ActionType, ResponseStatus, SocketState } from '@calcu-bot/shared';
 import connectDB from './db';
 import { getLatestExpressions, insertExpression } from './service/Expression.service';
 import path from 'path';
@@ -26,11 +26,11 @@ const server = require('http').createServer(app);
 // Create a Socket.IO server
 const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173", // Vite's default port
+      origin: process.env.ALLOWED_URL, // Vite's default port
       methods: ["GET", "POST"],
       credentials: true
     },
-    path: '/socket.io' // Make sure this matches the proxy path
+    path: '/socket.io'
   });
 
 // Handle Socket.IO connections
@@ -38,73 +38,63 @@ io.on('connection', (socket) => {
     console.log('A user connected');
 
     // Handle disconnection
-    socket.on('disconnect', () => {
+    socket.on(SocketState.DISCONNECT, () => {
         console.log('A user disconnected');
     });
 
     // Example of handling a custom event
-    socket.on('message',async (data) => {
+    socket.on(SocketState.MESSAGE,async (data) => {
         const { type, expression } = data; // Destructure type and expression from the data
        
         try {
             if (type === ActionType.HISTORY) {
                 const expressions = await getLatestExpressions(10, 1); // Retrieve expressions from the database
-                socket.emit('history', expressions); // Emit the history back to the client
+                const response = {
+                    status: ResponseStatus.SUCCESS,
+                    data: expressions
+                    
+                }
+                socket.emit(SocketState.HISTORY, response); // Emit the history back to the client
             } else if (type === ActionType.EVALUATE) {
                 const result = evaluateExpression(expression); // Evaluate the mathematical expression
                 const newExpression = await insertExpression(expression, result); // Save the expression and result to the database
-                socket.emit('result', {
-                    expression: newExpression.expression,
-                    result: result
 
-                }); // Emit the result back to the client
+                const response = {
+                    status: ResponseStatus.SUCCESS,
+                    data: {
+                        expression: newExpression.expression,
+                        result
+                    }
+                }
+
+                socket.emit(SocketState.RESULT, response); // Emit the result back to the client
         
             } else {
-                socket.emit('error', 'Invalid action type'); // Handle invalid action type
+                const response = {
+                    status: 'error',
+                    message: "Invalid action type"
+                }
+                socket.emit(SocketState.ERROR, response); // Handle invalid action type
             }
         } catch (error) {
             console.error('Error processing request:', error);
-            socket.emit('error', 'Error processing request');
+            const response = {
+                status: ResponseStatus.ERROR,
+                message: "Error processing request"
+            }
+            socket.emit(SocketState.ERROR, response);
         }
     });
 });
 
-app.get('/hello', async (_: Request, res: Response) => {
-
-    console.log(evaluateExpression("2+2+2+2"))
-    res.send('Hello World')
-});
-
-// Route to retrieve all expressions
-app.get('/expressions', async (req: Request, res: Response) => {
-    try {
-        const expressions = await getLatestExpressions(10, 1);
-        res.status(200).json(expressions);
-    } catch (error) {
-        res.status(500).json({ message: 'Error retrieving expressions', error });
-    }
-});
-
-// Route to create a new expression
-app.post('/expressions', async (req: Request, res: Response) => {
-    const { expression, result } = req.body;
-
-    try {
-        const newExpression = await insertExpression(expression, result);
-        res.status(201).json(newExpression);
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating expression', error });
-    }
-});
-
 
 // Route to serve the React app
-app.get('/calc', (req: Request, res: Response) => {
+app.get('/', (req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 server.listen(port, () => {
-    console.log(`>> Ready on http://localhost:${port}`);
+    console.log(`>> Ready on port:${port}`);
 })
 
 

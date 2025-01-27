@@ -5,8 +5,6 @@ import { Evaluation } from '../types';
 
 const { Text } = Typography;
 
-
-
 interface ResultsOverviewProps {
     results: Array<Evaluation>
 

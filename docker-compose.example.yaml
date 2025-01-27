@@ -1,0 +1,25 @@
+# docker-compose.yml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:8000"
+    environment:
+      - PORT=<PORT_NUMBER>
+      - MONGO_URL=<MONGO_URL>
+      - ALLOWED_URL=<ALLOWED_URL>
+      - VITE_IO_URL=<URLTOIO>
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

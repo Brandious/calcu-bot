@@ -8,6 +8,8 @@ const { Title } = Typography;
 
 const Calculator: React.FC = () => {
     const [expression, setExpression] = useState('');
+    const [arrowPressCount, setArrowPressCount] = useState(0); // State to track arrow key presses
+
     const { isConnected, evaluate, getHistory, sessionResults } = useConnection();
     const { token } = theme.useToken();
 
@@ -22,6 +24,7 @@ const Calculator: React.FC = () => {
 
         const normalizedInput = expression.trim().toLowerCase();
         setExpression("")
+        setArrowPressCount(0)
         // Check if input is a history command
         if (normalizedInput === 'history' || normalizedInput === 'show history') {
             getHistory();
@@ -44,6 +47,24 @@ const Calculator: React.FC = () => {
 
     };
 
+
+    const handleArrowUp = (event: React.KeyboardEvent) => {
+        if (event.key === 'ArrowUp') {
+
+            if (sessionResults.length - arrowPressCount - 1 < 0) { setArrowPressCount(0); return; }
+
+            const latestEntry = sessionResults[sessionResults.length - arrowPressCount - 1]; // Get the latest entry
+            setArrowPressCount(arrowPressCount + 1)
+
+            if (latestEntry) {
+                setExpression(latestEntry.expression)
+                return;
+            }
+
+
+        }
+        return null; // Return null if no valid entry is found
+    };
 
     return (
         <Flex
@@ -79,16 +100,18 @@ const Calculator: React.FC = () => {
                     onChange={(e) => handleInput(e.target.value)}
                     placeholder="Enter your mathematical expression..."
                     onPressEnter={handleSubmit}
-
+                    onKeyDown={handleArrowUp}
                     style={{
                         marginBottom: '20px'
                     }}
+                    disabled={!isConnected}
                 />
 
                 <Button
                     type="primary"
                     size="large"
                     onClick={handleSubmit}
+                    disabled={!isConnected}
 
                 >
                     Calculate

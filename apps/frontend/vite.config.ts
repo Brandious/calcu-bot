@@ -1,12 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    preserveSymlinks: true, // this is the fix
+    preserveSymlinks: true,
     alias: {
       '@calcu-bot/shared': path.resolve(__dirname, '../shared/src/index.ts'), // Adjusted path to the built shared package
     },
@@ -14,7 +17,7 @@ export default defineConfig({
   server: {
     proxy: {
     '/socket.io': {
-      target: "http://localhost:8000",
+      target: process.env.VITE_IO_URL,
       changeOrigin: true,
       ws: true
     }}}

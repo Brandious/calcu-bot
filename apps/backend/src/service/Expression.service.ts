@@ -1,6 +1,5 @@
-import { SortOrder } from 'mongoose';
 import Expression, { IExpression } from '../models/Expression.model'
-import { timeStamp } from 'console';
+
 
 // Function to insert a new expression
 export const insertExpression = async (expression: string, result: number): Promise<IExpression> => {

@@ -2,8 +2,10 @@
 import { message } from 'antd';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { ActionType } from '@calcu-bot/shared';
+import { ActionType, SocketState } from '@calcu-bot/shared';
 import { Evaluation, EvaluationResponse, HistoryResponse } from '../types';
+import { ResponseStatus } from '@calcu-bot/shared'
+
 
 // Define the shape of our context
 interface ConnectionContextType {
@@ -33,30 +35,25 @@ interface ConnectionProviderProps {
 }
 
 export const ConnectionProvider: React.FC<ConnectionProviderProps> = ({ children }) => {
-    const [socket, setSocket] = useState<Socket | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
+    const [socket, setSocket] = useState<Socket | null>(null); // Socket internals
+    const [isConnected, setIsConnected] = useState(false); // Connection state
     const [sessionResults, setSessionResults] = useState<Array<Evaluation>>([]); // Store all session results
 
 
     useEffect(() => {
-
         // Initialize socket connection with the proxy path
         const socketInstance = io({
             path: '/socket.io',
             transports: ['websocket', 'polling'],
-            // Remove the explicit URL since we're using the proxy
         });
 
         // Set up event listeners
         socketInstance.on('connect', () => {
-
-            console.log('Connected to server');
             setIsConnected(true);
         });
 
 
-        socketInstance.on('disconnect', () => {
-            console.log('Disconnected from server');
+        socketInstance.on(SocketState.DISCONNECT, () => {
             setIsConnected(false);
         });
 
@@ -77,37 +74,19 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = ({ children
         }
 
         try {
-            socket.emit('message', {
+            socket.emit(SocketState.MESSAGE, {
                 type: ActionType.EVALUATE,
                 expression
-            }, (error: Error | null, response: EvaluationResponse) => {
+            }, (error: Error | null) => {
                 if (error) {
                     // Handle timeout or other socket errors
-                    console.error('Socket error:', error);
                     message.error(`Connection error: ${error.message}`);
                     return;
                 }
-
-                if (response?.status === 'error') {
-                    // Handle server-side errors
-                    console.error('Server error:', response.message);
-                    message.error(`Calculation error: ${response.message}`);
-                    return;
-                }
-
-
             });
         } catch (error) {
-            // Handle any synchronous errors during emit
-            console.error('Emission error:', error);
             message.error(`Failed to send calculation`);
         }
-
-        // Set up error listener for this specific event
-        socket.once('error', (error) => {
-            console.error('Socket error event:', error);
-            message.error(`Server error: ${error.message}`);
-        });
     };
 
     // apps/frontend/src/context/ConnectionContext.tsx
@@ -118,33 +97,19 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = ({ children
         }
 
         try {
-            socket.emit('message', {
+            socket.emit(SocketState.MESSAGE, {
                 type: ActionType.HISTORY
-            }, (error: Error | null, response: HistoryResponse) => {
+            }, (error: Error | null) => {
                 if (error) {
                     // Handle timeout or other socket errors
-                    console.error('Socket error while fetching history:', error);
                     message.error(`Failed to fetch history: ${error.message}`);
                     return;
                 }
 
-                if (response?.status === 'error') {
-                    // Handle server-side errors
-                    console.error('Server error while fetching history:', response.message);
-                    message.error(`History error: ${response.message}`);
-                    return;
-                }
-            });
 
-            // Set up error listener for this specific event
-            socket.once('error', (error) => {
-                console.error('Socket error event during history fetch:', error);
-                message.error(`Server error while fetching history: ${error.message}`);
             });
 
         } catch (error) {
-            // Handle any synchronous errors during emit
-            console.error('Error sending history request:', error);
             message.error(`Failed to request history`);
         }
     };
@@ -154,28 +119,29 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = ({ children
         if (!socket) return;
 
         // Listen for evaluation results
-        socket.on('result', (response) => {
-            console.log('Evaluation result:', response);
+        socket.on(SocketState.RESULT, (response: EvaluationResponse) => {
             // You can add additional handling here
-            if (response) {
+            const data = response.data;
+            if (response.status === ResponseStatus.SUCCESS && data) {
                 const newResult = {
-                    expression: response.expression,
-                    result: response.result,
+                    expression: data.expression,
+                    result: data.result,
                     timestamp: new Date(),
                     isHistory: false
                 };
                 setSessionResults(prev => [...prev, newResult]);
 
             } else {
-                message.error(response?.message || 'Error evaluating expression');
+                message.error(response.message || 'Error evaluating expression');
             }
         });
 
         // Listen for history results
-        socket.on('history', (response) => {
-            console.log("Response", response)
-            if (response) {
-                const historyWithDates = response
+        socket.on(SocketState.HISTORY, (response: HistoryResponse) => {
+            const data = response.data;
+
+            if (response.status === ResponseStatus.SUCCESS && data) {
+                const historyWithDates = data
                     .map((item: Evaluation) => ({
                         ...item,
                         timestamp: new Date(item.timestamp),
@@ -189,22 +155,22 @@ export const ConnectionProvider: React.FC<ConnectionProviderProps> = ({ children
                     return newResults
                 });
             } else {
-                message.error(response?.message || 'Error retrieving history');
+                message.error(response.message || 'Error retrieving history');
             }
 
         });
 
         // Listen for errors
-        socket.on('error', (error) => {
-            console.error('Socket error:', error);
+        socket.on(SocketState.ERROR, (error) => {
+            message.error(error.message);
             // You can add additional error handling here
         });
 
         // Cleanup listeners on unmount
         return () => {
-            socket.off('result');
-            socket.off('history');
-            socket.off('error');
+            socket.off(SocketState.RESULT);
+            socket.off(SocketState.HISTORY);
+            socket.off(SocketState.ERROR);
         };
     }, [socket]);
 
