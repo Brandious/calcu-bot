@@ -21,4 +21,8 @@ build/
 
 
 .vscode
-./docker-compose.yaml
+# Ignore Docker files
+docker-compose.yml
+docker-compose.override.yml
+.docker/
+docker-compose.yaml
