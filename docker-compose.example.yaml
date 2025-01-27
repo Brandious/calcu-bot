@@ -5,12 +5,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:8000"
+      - "3000:<PORT_NUMBER>"
     environment:
       - PORT=<PORT_NUMBER>
       - MONGO_URL=<MONGO_URL>
-      - ALLOWED_URL=<ALLOWED_URL>
-      - VITE_IO_URL=<URLTOIO>
     depends_on:
       - mongodb
 
