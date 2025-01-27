@@ -1,4 +1,3 @@
-
 interface BaseResponse {
     status: 'success' | 'error';
     message?: string;
@@ -13,7 +12,7 @@ export interface Evaluation {
 
 
 export interface EvaluationResponse extends BaseResponse {
-       data?: Evaluation
+    data?: Evaluation
 }
 
 export interface HistoryResponse extends BaseResponse {

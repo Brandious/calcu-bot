@@ -7,10 +7,14 @@
   ],
   "scripts": {
     "server": "yarn workspace backend dev",
-    "client": "yarn workspace frontend dev"
+    "client": "yarn workspace frontend dev",
+    "build": "yarn workspaces foreach --all run build",
+    "start": "yarn workspace backend start",
+    "dev": "yarn workspaces foreach -all run dev"
   },
   "devDependencies": {
     "@types/node": "^22.10.10",
+    "jest": "^29.7.0",
     "typescript": "^5.7.3"
   },
   "dependencies": {

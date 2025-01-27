@@ -21,10 +21,11 @@ const Calculator: React.FC = () => {
         }
 
         const normalizedInput = expression.trim().toLowerCase();
-
+        setExpression("")
         // Check if input is a history command
         if (normalizedInput === 'history' || normalizedInput === 'show history') {
             getHistory();
+
             return;
         }
 
@@ -34,9 +35,13 @@ const Calculator: React.FC = () => {
 
         if (isValidMathExpression) {
             evaluate(normalizedInput);
+
         } else {
             message.error('Invalid input. Please enter a valid mathematical expression or "history"');
         }
+
+
+
     };
 
 
@@ -74,6 +79,7 @@ const Calculator: React.FC = () => {
                     onChange={(e) => handleInput(e.target.value)}
                     placeholder="Enter your mathematical expression..."
                     onPressEnter={handleSubmit}
+
                     style={{
                         marginBottom: '20px'
                     }}

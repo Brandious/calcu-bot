@@ -2,7 +2,7 @@
 import { message } from 'antd';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { ActionType } from '../../../shared/src';
+import { ActionType } from '@calcu-bot/shared';
 import { Evaluation, EvaluationResponse, HistoryResponse } from '../types';
 
 // Define the shape of our context

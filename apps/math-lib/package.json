@@ -1,15 +1,13 @@
 {
-  "name": "math-lib",
-  "packageManager": "yarn@4.3.1",
+  "name": "@calcu-bot/math-lib",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npx tsc"
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
-  },
-  "files": [
-    "dist"
-  ]
+  }
 }

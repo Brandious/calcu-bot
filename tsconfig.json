@@ -21,6 +21,5 @@
       "noFallthroughCasesInSwitch": false,
     },
   
-    "include": ["src"],
-  }
+}
   

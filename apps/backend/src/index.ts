@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
-import { evaluateExpression } from "math-lib";
+import { evaluateExpression } from "@calcu-bot/math-lib";
 import { Server } from "socket.io";
-import { ActionType } from './../../shared/src/index';
+import { ActionType } from '@calcu-bot/shared';
 import connectDB from './db';
 import { getLatestExpressions, insertExpression } from './service/Expression.service';
+import path from 'path';
 
 dotenv.config()
 
@@ -15,6 +16,9 @@ const app: Express = express();
 app.use(express.json()); // Middleware to parse JSON bodies
 
 await connectDB()
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/')));
 
 // Create an HTTP server
 const server = require('http').createServer(app);
@@ -41,6 +45,7 @@ io.on('connection', (socket) => {
     // Example of handling a custom event
     socket.on('message',async (data) => {
         const { type, expression } = data; // Destructure type and expression from the data
+       
         try {
             if (type === ActionType.HISTORY) {
                 const expressions = await getLatestExpressions(10, 1); // Retrieve expressions from the database
@@ -93,8 +98,13 @@ app.post('/expressions', async (req: Request, res: Response) => {
 });
 
 
+// Route to serve the React app
+app.get('/calc', (req: Request, res: Response) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
 server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`>> Ready on http://localhost:${port}`);
 })
 
 
